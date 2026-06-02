@@ -28,71 +28,106 @@ If forked, the full name MUST be different. It is recommended you change the sub
 
 ## Example
 
-```tcl
+```
 # Comments start with a '#'
+# Comments MUST be on their own line
 
-main {                  # By convention, a "main" section is declared
-                        #   '{' must be followed by a new line
+# A simple key-value
+# As much whitespace after the key can exist until value data is found
+version       "1.0"
 
-                        # Indentation is conventional, but not required
-                        #   New-line _is_ syntactic, though.
+# Here, we create a "main" section pointing at a map
+main {                  
+    #   '{' must be followed by a new line
 
-    output   ./bin      # normal key-value.
-                        # after comment is removed, any whitespace after value is removed
+    # Indentation is conventional, but not required
+    #   New-line _is_ syntactic, though.
 
-    sources  [          #  key to list of values
-                        #   '[' must be followed by a new line
-        ./src           # each value lives on its own line
+    # normal key-value.
+    output   ./bin      
+
+    #  key to list of values
+    #   '[' must be followed by a new line
+    sources  [         
+
+        # each value lives on its own line
+        ./src
         ./lib/lib-src
         ./my files/src
-                        # Note that a list value can only be a string
     ]
 
+    # Maps can nest into maps
     opts {
-        opener  "{"     # use quote mark to indicate literal data
-        closer  '}'     # the line MUST end with the same quote mark opener
+        opener  "{"
+        closer  '}'
         spacer  " "
-        quotemark """
-        singles   '''
 
+    # Indentation is optional (but recommended!)
+
+    quotemark   """
+    singles     '''
     }
-    quote   "Say "yes"" # -> Say "yes"
-    cite    ""Hark!""   # -> "Hark!"
-                        # Anything between the opening and closing marks are raw data.
+
+    # Anything between the opening and closing marks are raw data.
+    # To include quotes as the raw data, include them within the edge quotes
+    quote   "Say "yes""
+    cite    ""Hark!""
 
     types {
     # Special values
     # If it looks like a number, it is a number, else it is a string
-    count 5          # a number
-    id "5"           # clearly intended to be a string
-    happy true       # a boolean
-    know_it "false"  # a string
+    
+    # a number
+    count 5          
+    
+    # clearly intended to be a string
+    id "5"           
+    
+    # a boolean
+    happy true       
+    
+    # a string
+    know_it "false"  
     }
-}
 
+    # Lists can contain maps, which can further contain other complex types
+    steps [
+        {
+            name up
+            command ./service.sh up
+            opts [
+                --daemon
+            ]
+        }
+        {
+            name down
+            command ./service.sh down
+        }
+    ]
+}
 ```
 
 The implementation that you produce will determine what the parsed data should look like. The above equivalent in JSON would be
 
-```json
-{ "main" : {
-    "output" : "./bin",
-    "sources" : ["./src", "./lib/lib-src", "./my files/src"],
-    "opt": [
-      "opener": "{",
-      "closer": "}",
-      "spacer": " ",
-      "quotemark": "\"",
-      "singles": "'"
-    }
-    "quote": "Say \"yes\"",
-    "cite": "\"Hark!\"",
-    "types": {
-        "count": 5,
-        "id": "5"
-    }
-}
-}
+```
+{'main': {'cite': '"Hark!"',
+          'opts': {'closer': '}',
+                   'opener': '{',
+                   'quotemark': '"',
+                   'singles': "'",
+                   'spacer': ' '},
+          'output': './bin',
+          'quote': 'Say "yes"',
+          'sources': ['./src', './lib/lib-src', './my files/src'],
+          'steps': [{'command': './service.sh up',
+                     'name': 'up',
+                     'opts': ['--daemon']},
+                    {'command': './service.sh down', 'name': 'down'}],
+          'types': {'count': '5',
+                    'happy': true,
+                    'id': '5',
+                    'know_it': 'false'}},
+ 'version': '1.0'}
 ```
 
 This highlights:
