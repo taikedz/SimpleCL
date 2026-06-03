@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
 """ SimpleCL parser
 
 Following the intuitive rules, this is a reference parser. (Formal rules TBD)
 
 This simple python script demonstrates the simplicity of the notation for parsing.
+
+(C) 2026 Tai Kedzierski , conveyed to you under the terms of the GNU Lesser General Public License v3.0
 """
 
 
@@ -66,7 +69,7 @@ def parseMultilineComment(lines:list[str], start_idx) -> int:
 
     raise ScEofError(f"EOF: unclosed comment started at line {start_idx}")
 
-def parseMultilineData(lines:list[str], start_idx, head) -> tuple[str,int]:
+def parseMultilineData(lines:list[str], start_idx, head, location) -> tuple[str,int]:
     i = start_idx
     mldata = []
     marker = "----"
@@ -84,7 +87,7 @@ def parseMultilineData(lines:list[str], start_idx, head) -> tuple[str,int]:
         finally:
             i+=1
 
-    raise ScEofError(f"EOF: unterminated multiline data started at {start_idx} (expected {repr(marker)})")
+    raise ScEofError(f"EOF: unterminated multiline data from {location} started at {start_idx} (expected {repr(marker)})")
 
 
 def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple[dict,int]:
@@ -124,7 +127,7 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
                 submap, i = parseMap(lines, i+1, location)
                 data[k] = submap
             elif v.startswith("<<"):
-                mldata,i = parseMultilineData(lines, i+1, v)
+                mldata,i = parseMultilineData(lines, i+1, v, location)
                 data[k] = mldata
             else:
                 data[k] = parseValue(v)
@@ -140,7 +143,7 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
 def parseList(lines:list[str], start_idx:int, lead:list):
     data = []
     i = start_idx
-    location = lead + ["[]"]
+    item = 0
 
     while i < len(lines):
         line_no = i+1
@@ -154,6 +157,8 @@ def parseList(lines:list[str], start_idx:int, lead:list):
             if not line or line.startswith("#"):
                 continue
 
+            location = lead+[f"[{item}]"]
+
             if line == "]":
                 return data, i
             if line == "}":
@@ -163,15 +168,19 @@ def parseList(lines:list[str], start_idx:int, lead:list):
                 values, n = parseList(lines, i+1, location)
                 i = n
                 data.append(values)
+                item += 1
             elif line == "{":
                 submap, n = parseMap(lines, i+1, location)
                 i = n
                 data.append(submap)
+                item += 1
             elif line.startswith("<<"):
-                mldata,i = parseMultilineData(lines, i+1, line)
+                mldata,i = parseMultilineData(lines, i+1, line, location)
                 data.append(mldata)
+                item += 1
             else:
                 data.append(parseValue(line))
+                item += 1
 
         finally:
             i += 1
