@@ -65,7 +65,7 @@ main {
 
     #--
     Multiline coments can be added
-    They end with a '#//end' alone on its own line
+    They end with a '#--#' alone on its own line (leading whitespace is allowed)
     #--#
 
     # Lists can contain maps, which can further contain other complex types

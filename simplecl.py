@@ -11,7 +11,9 @@ This simple python script demonstrates the simplicity of the notation for parsin
 
 import re
 
-NUM = re.compile(r'^-?[0-9](\.[0-9]+)?')
+NUM = re.compile(r'^-?[0-9](\.[0-9]+)?$')
+KEY = re.compile(r'^[a-zA-Z0-9_-]+$')
+
 
 MODE_NORMAL = "normal"
 MODE_COMMENT = "multi-line comment"
@@ -115,6 +117,8 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
                 k,v = line.split(maxsplit=1)
             except ValueError as e:
                 raise ScSyntaxError(f"Expected key-value (map started at line {start_idx}), got {repr(line)}") from e
+            if not re.match(KEY, k):
+                raise ScSyntaxError(f"Invalid key name {repr(k)}. Use alphanumeirc values, '-', and '_' only.")
             location = lead+[k]
             
             if data.get(k) is not None:
