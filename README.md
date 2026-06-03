@@ -25,7 +25,7 @@ amongst other reasons.
 
 ## Supported features
 
-* Line-based definitions - each definition is on a single line, no "clever" obfuscative one-liners
+* Line-based parsing - simpler than token-based parsing
 * Leading whitespace is not syntactic
 * Comments, multiline comments
 * Nested map and list structures
