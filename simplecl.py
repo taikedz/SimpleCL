@@ -18,10 +18,6 @@ NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 _NAME_ERROR_MESSAGE = "Use alphanumeric values, '-', and '_' only."
 
 
-MODE_NORMAL = "normal"
-MODE_COMMENT = "multi-line comment"
-MODE_DATA = "multi-line data"
-
 COMMENT_START = "#--"
 COMMENT_END = "#--#"
 
