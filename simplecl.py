@@ -37,7 +37,9 @@ def parseFile(filepath):
 
 
 def parse(lines:list[str]):
-    data, _ = parseMap(lines, 0, [], toplevel=True)
+    data, n = parseMap(lines, 0, [], toplevel=True)
+    if n < len(lines):
+        raise ScSyntaxError(f"ERROR: Data root closed off premturely at line {n+1}. (Note - premature closer may be at an earlier line)")
     return data
 
 
