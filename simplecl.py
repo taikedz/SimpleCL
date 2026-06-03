@@ -54,7 +54,7 @@ def parseValue(value:str):
 
     if value.lower() in ["true", "false"]:
         return True if value.lower() == "true" else False
-    
+
     return value
 
 
@@ -74,12 +74,13 @@ def parseMultilineComment(lines:list[str], start_idx) -> int:
 def parseMultilineData(lines:list[str], start_idx, head, location) -> tuple[str,int]:
     i = start_idx
     mldata = []
-    marker = "----"
+    marker = "--END" # default value, will be replaced, always
     m = re.match(r"<<\s*(.+)", head)
     if m:
         marker = f"--{m.group(1)}"
     else:
         raise ScSyntaxError(f"Not a multi-line marker: {repr(head)}")
+
     while i < len(lines):
         try:
             line = lines[i]
@@ -118,9 +119,9 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
             except ValueError as e:
                 raise ScSyntaxError(f"Expected key-value (map started at line {start_idx}), got {repr(line)}") from e
             if not re.match(KEY, k):
-                raise ScSyntaxError(f"Invalid key name {repr(k)}. Use alphanumeirc values, '-', and '_' only.")
+                raise ScSyntaxError(f"Invalid key name {repr(k)}. Use alphanumeric values, '-', and '_' only.")
             location = lead+[k]
-            
+
             if data.get(k) is not None:
                 raise KeyError(f"Key '{','.join(location)}' redefined on line {line_no}")
 
@@ -167,15 +168,13 @@ def parseList(lines:list[str], start_idx:int, lead:list):
                 return data, i
             if line == "}":
                 raise ScSyntaxError(f"Error whilst parsing list at {location} from line {start_idx} : found map closer on line {line_no}")
-            
+
             if line == "[":
-                values, n = parseList(lines, i+1, location)
-                i = n
+                values, i = parseList(lines, i+1, location)
                 data.append(values)
                 item += 1
             elif line == "{":
-                submap, n = parseMap(lines, i+1, location)
-                i = n
+                submap, i = parseMap(lines, i+1, location)
                 data.append(submap)
                 item += 1
             elif line.startswith("<<"):
