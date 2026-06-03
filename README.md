@@ -35,7 +35,7 @@ See the [example file](example/data.example) for a comprehensive overview ; run 
 
 ## Specification
 
-TBD. I started the implementation to get a feel for the ergonomics and was done beore I knew it...
+See the [Specification](Specification.md) notes.
 
 ## Reference implementation
 
