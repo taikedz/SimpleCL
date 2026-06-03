@@ -69,12 +69,6 @@ The top level lines of the data belong to the Root Map - a single unnamed map th
 
 Any map other than the Root Map must be terminated by a line containing a single `}` character, optionally with trailing and/or leading whitespace. The Root Map may be terminated by encountering End OF File (EOF)
 
-A map entry line always specifies a key name, followed by any amout of whitespaced, followed by a value.
-
-A map key name can be any non-zero number of ASCII characters, digits, the underscore, or the hyphen; that is any string matching the regular expression: `^[a-zA-Z0-9_-]+$`
-
-A map may not define the same key twice.
-
 ## Complex types
 
 A complex type must be closed by its own closer character.
@@ -85,10 +79,22 @@ A list must be closed with a `]` character. If a `}` is encountered alone on a l
 
 When a complex type is nested under another, the child type _must_ encounter its own closer in order to close, and for parsing to resume at the parent level.
 
+## Map
+
+A map entry line always specifies a key name, followed by any amout of whitespaced, followed by a value.
+
+A map key name can be any non-zero number of ASCII characters, digits, the underscore, or the hyphen; that is any string matching the regular expression: `^[a-zA-Z0-9_-]+$`
+
+A map may not define the same key twice.
+
+## List
+
+A list entry line consists of any kind of value. Lists contain an ordered discrete number of items.
+
 ### Multiline data
 
-A multiline data marker starts with `<<` and is followed by a piece of marker text e.g. `<< EOTEXT`.
-
 Multiline data is reatined as-is: the trailing and leading whitespace is left untouched.
+
+A multiline data marker starts with `<<` and is followed by a piece of marker text e.g. `<< EOTEXT`. Marker labels must adhere to the same convention of map key names: alphanumeric, dash, and underscore.
 
 To close the multiline data section, the section must be closed with its corresponding marker, two hyphens followed by the marker text e.g. `--EOTEXT`. This must be on its own on a line, with no leading whitespace.

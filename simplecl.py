@@ -12,7 +12,8 @@ This simple python script demonstrates the simplicity of the notation for parsin
 import re
 
 NUM = re.compile(r'^-?[0-9](\.[0-9]+)?$')
-KEY = re.compile(r'^[a-zA-Z0-9_-]+$')
+NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+_NAME_ERROR_MESSAGE = "Use alphanumeric values, '-', and '_' only."
 
 
 MODE_NORMAL = "normal"
@@ -27,7 +28,12 @@ class ScSyntaxError(Exception):
     pass
 
 class ScEofError(ScSyntaxError):
-    pass
+    def __init__(self, message):
+        ScSyntaxError.__init__(self, f"EOF: {message}")
+
+class ScNameError(ScSyntaxError):
+    def __init__(self, line, keyname):
+        ScSyntaxError.__init__(self, f"Invalid key {repr(keyname)} at line {line}. {_NAME_ERROR_MESSAGE}")
 
 
 def parseFile(filepath):
@@ -76,17 +82,22 @@ def parseMultilineComment(lines:list[str], start_idx) -> int:
 def parseMultilineData(lines:list[str], start_idx, head, location) -> tuple[str,int]:
     i = start_idx
     mldata = []
-    marker = "--END" # default value, will be replaced, always
+    marker = "--EODATA" # default value, will be replaced, always
+
     m = re.match(r"<<\s*(.+)", head)
+
     if m:
-        marker = f"--{m.group(1)}"
+        name = m.group(1)
+        if not re.match(NAME, name):
+            raise ScNameError(i+1, name)
+        marker = f"--{name}"
     else:
         raise ScSyntaxError(f"Not a multi-line marker: {repr(head)}")
 
     while i < len(lines):
         try:
             line = lines[i]
-            if line == marker:
+            if line.strip() == marker:
                 return "\n".join(mldata), i
             mldata.append(line)
         finally:
@@ -120,8 +131,8 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
                 k,v = line.split(maxsplit=1)
             except ValueError as e:
                 raise ScSyntaxError(f"Expected key-value (map started at line {start_idx}), got {repr(line)}") from e
-            if not re.match(KEY, k):
-                raise ScSyntaxError(f"Invalid key name {repr(k)}. Use alphanumeric values, '-', and '_' only.")
+            if not re.match(NAME, k):
+                raise ScNameError(line, k)
             location = lead+[k]
 
             if data.get(k) is not None:
