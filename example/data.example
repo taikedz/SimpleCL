@@ -6,36 +6,40 @@
 # As much whitespace after the key can exist until value data is found
 version       "1.0"
 
+int 42
+float 3.14
+string "1"
+
 # Here, we create a "main" section pointing at a map
-main {                  
+main {
     #   '{' must be followed by a new line
 
     # Indentation is conventional, but not required
     #   New-line _is_ syntactic, though.
 
     # normal key-value.
-    output   ./bin      
+    output   ./bin
 
     #  key to list of values
     #   '[' must be followed by a new line
-    sources  [         
+    sources  [
 
         # each value lives on its own line
         ./src
         ./lib/lib-src
+
+        # Spaces in values in lists are preserved
         ./my files/src
     ]
 
     # Maps can nest into maps
     opts {
         opener  "{"
-        closer  '}'
+    # Indentation is optional (but recommended!)
+    closer  '}'
         spacer  " "
 
-    # Indentation is optional (but recommended!)
 
-    quotemark   """
-    singles     '''
     }
 
     # Anything between the opening and closing marks are raw data.
@@ -46,18 +50,18 @@ main {
     types {
     # Special values
     # If it looks like a number, it is a number, else it is a string
-    
+
     # a number
-    count 5          
-    
+    count 5
+
     # clearly intended to be a string
-    id "5"           
-    
+    id "5"
+
     # a boolean
-    happy true       
-    
+    happy true
+
     # a string
-    know_it "false"  
+    know_it "false"
     }
 
     #--
@@ -80,3 +84,33 @@ main {
         }
     ]
 }
+
+# Multiline data can be assigned to a name
+# Note that leading whitespace in the multi-line data IS preserved
+
+quote << LOREM
+The quote
+
+    "Lorem ipsum dolor sit amet"
+
+Should be in fact "Dolorem ipsum, dolot sit amet"
+And then continues on
+--LOREM
+
+# With a heredoc style marker and end marker
+
+# Multiline data can also exist in lists
+
+actions [
+    <<SCRIPT
+def hello():
+    print("Hi")
+
+hello()
+--SCRIPT
+
+    <<CALL
+python3 script.py
+echo Done.
+--CALL
+]

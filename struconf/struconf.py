@@ -8,7 +8,7 @@ This simple python script demonstrates the simplicity of the notation for parsin
 
 import re
 
-NUM = re.compile(r'^[0-9](\.[0-9]+)+')
+NUM = re.compile(r'^-?[0-9](\.[0-9]+)?')
 
 MODE_NORMAL = "normal"
 MODE_COMMENT = "multi-line comment"
@@ -27,19 +27,19 @@ class ScEofError(ScSyntaxError):
 
 def parseFile(filepath):
     with open(filepath, 'r') as fh:
-        lines = [line.strip() for line in fh]
+        lines = [line.rstrip("\n\r") for line in fh]
     return parse(lines)
 
 
 def parse(lines:list[str]):
-    data, _ = parseMap(lines, 0, [])
+    data, _ = parseMap(lines, 0, [], toplevel=True)
     return data
 
 
 def parseValue(value:str):
     if ''.join(value[0:1]+value[-1:]) in ['""', "''"]:
         return value[1:-1]
-    
+
     if re.match(NUM, value):
         for t in (int, float):
             try:
@@ -58,7 +58,7 @@ def parseMultilineComment(lines:list[str], start_idx) -> int:
 
     while i < len(lines):
         try:
-            line = lines[i]
+            line = lines[i].strip()
             if line == COMMENT_END:
                 return i
         finally:
@@ -66,15 +66,35 @@ def parseMultilineComment(lines:list[str], start_idx) -> int:
 
     raise ScEofError(f"EOF: unclosed comment started at line {start_idx}")
 
+def parseMultilineData(lines:list[str], start_idx, head) -> tuple[str,int]:
+    i = start_idx
+    mldata = []
+    marker = "----"
+    m = re.match(r"<<\s*(.+)", head)
+    if m:
+        marker = f"--{m.group(1)}"
+    else:
+        raise ScSyntaxError(f"Not a multi-line marker: {repr(head)}")
+    while i < len(lines):
+        try:
+            line = lines[i]
+            if line == marker:
+                return "\n".join(mldata), i
+            mldata.append(line)
+        finally:
+            i+=1
 
-def parseMap(lines:list[str], start_idx:int, lead:list) -> tuple[dict,int]:
+    raise ScEofError(f"EOF: unterminated multiline data started at {start_idx} (expected {repr(marker)})")
+
+
+def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple[dict,int]:
     data = {}
     i = start_idx
 
     while i < len(lines):
         line_no = i+1
         try:
-            line = lines[i]
+            line = lines[i].strip()
 
             if line == COMMENT_START:
                 i = parseMultilineComment(lines, i)
@@ -98,23 +118,23 @@ def parseMap(lines:list[str], start_idx:int, lead:list) -> tuple[dict,int]:
                 raise KeyError(f"Key '{','.join(location)}' redefined on line {line_no}")
 
             if v == "[":
-                values, n = parseList(lines, i+1, location)
-                i = n
+                values, i = parseList(lines, i+1, location)
                 data[k] = values
             elif v == "{":
-                submap, n = parseMap(lines, i+1, location)
-                i = n
+                submap, i = parseMap(lines, i+1, location)
                 data[k] = submap
+            elif v.startswith("<<"):
+                mldata,i = parseMultilineData(lines, i+1, v)
+                data[k] = mldata
             else:
                 data[k] = parseValue(v)
 
         finally:
             i += 1
 
-    if lines [-1:] != ["}"]:
-        raise ScEofError("EOF: Invalid map definition - no closing '}'")
-    
-    return data, i
+    if toplevel:
+        return data, i
+    raise ScEofError("EOF: Invalid map definition - no closing '}' for map from line " f"{start_idx}")
 
 
 def parseList(lines:list[str], start_idx:int, lead:list):
@@ -125,7 +145,7 @@ def parseList(lines:list[str], start_idx:int, lead:list):
     while i < len(lines):
         line_no = i+1
         try:
-            line = lines[i]
+            line = lines[i].strip()
 
             if line == COMMENT_START:
                 i = parseMultilineComment(lines, i)
@@ -147,16 +167,16 @@ def parseList(lines:list[str], start_idx:int, lead:list):
                 submap, n = parseMap(lines, i+1, location)
                 i = n
                 data.append(submap)
+            elif line.startswith("<<"):
+                mldata,i = parseMultilineData(lines, i+1, line)
+                data.append(mldata)
             else:
                 data.append(parseValue(line))
 
         finally:
             i += 1
 
-    if lines [-1:] != ["]"]:
-        raise ScEofError("EOF: Invalid list definition - no closing ']'")
-    
-    return data, i
+    raise ScEofError(f"EOF: Invalid list definition - no closing ']' for list from line {start_idx}")
 
 
 def main():
