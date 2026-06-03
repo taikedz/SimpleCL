@@ -1,4 +1,4 @@
-""" StruConf parser
+""" SimpleCL parser
 
 Following the intuitive rules, this is a reference parser. (Formal rules TBD)
 
