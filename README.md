@@ -90,6 +90,11 @@ main {
     know_it "false"  
     }
 
+    #//
+    Multiline coments can be added
+    They end with a '#//end' alone on its own line
+    #//end
+
     # Lists can contain maps, which can further contain other complex types
     steps [
         {

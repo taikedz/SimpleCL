@@ -1,0 +1,82 @@
+
+# Comments start with a '#'
+# Comments MUST be on their own line
+
+# A simple key-value
+# As much whitespace after the key can exist until value data is found
+version       "1.0"
+
+# Here, we create a "main" section pointing at a map
+main {                  
+    #   '{' must be followed by a new line
+
+    # Indentation is conventional, but not required
+    #   New-line _is_ syntactic, though.
+
+    # normal key-value.
+    output   ./bin      
+
+    #  key to list of values
+    #   '[' must be followed by a new line
+    sources  [         
+
+        # each value lives on its own line
+        ./src
+        ./lib/lib-src
+        ./my files/src
+    ]
+
+    # Maps can nest into maps
+    opts {
+        opener  "{"
+        closer  '}'
+        spacer  " "
+
+    # Indentation is optional (but recommended!)
+
+    quotemark   """
+    singles     '''
+    }
+
+    # Anything between the opening and closing marks are raw data.
+    # To include quotes as the raw data, include them within the edge quotes
+    quote   "Say "yes""
+    cite    ""Hark!""
+
+    types {
+    # Special values
+    # If it looks like a number, it is a number, else it is a string
+    
+    # a number
+    count 5          
+    
+    # clearly intended to be a string
+    id "5"           
+    
+    # a boolean
+    happy true       
+    
+    # a string
+    know_it "false"  
+    }
+
+    #--
+    Multiline coments can be added
+    They end with a '#//end' alone on its own line
+    #--#
+
+    # Lists can contain maps, which can further contain other complex types
+    steps [
+        {
+            name up
+            command ./service.sh up
+            opts [
+                --daemon
+            ]
+        }
+        {
+            name down
+            command ./service.sh down
+        }
+    ]
+}

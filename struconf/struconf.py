@@ -10,6 +10,13 @@ import re
 
 NUM = re.compile(r'^[0-9](\.[0-9]+)+')
 
+MODE_NORMAL = "normal"
+MODE_COMMENT = "multi-line comment"
+MODE_DATA = "multi-line data"
+
+COMMENT_START = "#--"
+COMMENT_END = "#--#"
+
 
 class ScSyntaxError(Exception):
     pass
@@ -46,18 +53,38 @@ def parseValue(value:str):
     return value
 
 
+def parseMultilineComment(lines:list[str], start_idx) -> int:
+    i = start_idx
+
+    while i < len(lines):
+        try:
+            line = lines[i]
+            if line == COMMENT_END:
+                return i
+        finally:
+            i+=1
+
+    raise ScEofError(f"EOF: unclosed comment started at line {start_idx}")
+
+
 def parseMap(lines:list[str], start_idx:int, lead:list) -> tuple[dict,int]:
     data = {}
     i = start_idx
+
     while i < len(lines):
         line_no = i+1
         try:
             line = lines[i]
+
+            if line == COMMENT_START:
+                i = parseMultilineComment(lines, i)
+                continue
+
             if not line or line.startswith("#"):
                 continue
 
             if line == "]":
-                raise ScSyntaxError(f"Error whilst parsing map from line {start_idx} : found list closer on line {line_no}")
+                raise ScSyntaxError(f"Error whilst parsing map at {lead} from line {start_idx} : found list closer on line {line_no}")
             if line == "}":
                 return data, i
 
@@ -99,13 +126,18 @@ def parseList(lines:list[str], start_idx:int, lead:list):
         line_no = i+1
         try:
             line = lines[i]
+
+            if line == COMMENT_START:
+                i = parseMultilineComment(lines, i)
+                continue
+
             if not line or line.startswith("#"):
                 continue
 
             if line == "]":
                 return data, i
             if line == "}":
-                raise ScSyntaxError(f"Error whilst parsing list from line {start_idx} : found map closer on line {line_no}")
+                raise ScSyntaxError(f"Error whilst parsing list at {location} from line {start_idx} : found map closer on line {line_no}")
             
             if line == "[":
                 values, n = parseList(lines, i+1, location)
