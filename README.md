@@ -1,6 +1,6 @@
-# SimpleCL : a minimal structured config notation
+# SimpleCL : a minimal structured config language
 
-A minimal, well-defined, human-readable/writable config notation with easy-to-implement parsing rules.
+A minimal, well-defined, human-readable/writable config data notation with easy-to-implement parsing rules.
 
 This came about because
 
