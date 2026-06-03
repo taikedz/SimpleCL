@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """ SimpleCL parser
 
-Following the intuitive rules, this is a reference parser. (Formal rules TBD)
+This is a reference parser for SimpleCL, based on the specification at v0.2.0
 
-This simple python script demonstrates the simplicity of the notation for parsing.
+This short python script demonstrates the simplicity of the notation for parsing.
 
 (C) 2026 Tai Kedzierski , conveyed to you under the terms of the GNU Lesser General Public License v3.0
+So yes, this can be included in proprietary software.
 """
 
 
+import os
 import re
 
 NUM = re.compile(r'^-?[0-9](\.[0-9]+)?$')
@@ -98,7 +100,7 @@ def parseMultilineData(lines:list[str], start_idx, head, location) -> tuple[str,
         try:
             line = lines[i]
             if line.strip() == marker:
-                return "\n".join(mldata), i
+                return os.linesep.join(mldata), i
             mldata.append(line)
         finally:
             i+=1
@@ -136,7 +138,7 @@ def parseMap(lines:list[str], start_idx:int, lead:list, toplevel=False) -> tuple
             location = lead+[k]
 
             if data.get(k) is not None:
-                raise KeyError(f"Key '{','.join(location)}' redefined on line {line_no}")
+                raise KeyError(f"Key '{':'.join(location)}' redefined on line {line_no}")
 
             if v == "[":
                 values, i = parseList(lines, i+1, location)
@@ -180,7 +182,7 @@ def parseList(lines:list[str], start_idx:int, lead:list):
             if line == "]":
                 return data, i
             if line == "}":
-                raise ScSyntaxError(f"Error whilst parsing list at {location} from line {start_idx} : found map closer on line {line_no}")
+                raise ScSyntaxError(f"Error whilst parsing list at {':'.join(location)} from line {start_idx} : found map closer on line {line_no}")
 
             if line == "[":
                 values, i = parseList(lines, i+1, location)

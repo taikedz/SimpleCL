@@ -2,6 +2,8 @@
 
 Simple Config Language is intended to be extremely simple, such that a full parser can be implemented with a minimal amounts of code and very reduced complexity.
 
+This specification is provided under the terms of the [Creative Commons Attributution-only 4.0 license](https://creativecommons.org/licenses/by/4.0/)
+
 ## Syntax errors
 
 Syntax errors in the data being parsed mean the data is invalid as a whole and should not be used. This invalid status should be propagated or signalled somehow to the caller of the parsing routine.
@@ -27,9 +29,11 @@ The configuration data string is split at along CR/LF boundaries. The following 
 * LF (\x0A)
 * CRLF (\x0D0A)
 
-When a sequence LFCR (reversed CRLF) is found, it should be treated as a single LF boundary, followed by a single CR boundary.
+When a sequence LFCR (reversed CRLF) is found, it may be treated as a single LF boundary, followed by a single CR boundary.
 
 Usually (unless otherwise specified), lines are stripped of leading and trailing whitespace, before being processed.
+
+When the parser would recombine split lines back into a single string of multiple lines (such as multiline data), the parser should provide a way to indicate the joining character/string it would use. If unspecified, it should be the operating system's own line separator.
 
 ## Comments
 

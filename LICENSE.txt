@@ -1,0 +1,10 @@
+(C) Tai Kedzierski
+
+Code is released under LGPL v3.0 - this means you can include it in proprietary software if you want,
+though modifications to SimpleCL itself must be made available to any who ask.
+
+Specification and text is released under CC-BY 4.0 - this means that you can copy, redistribute and modify the specification
+as you see fit, provided attribution is retained to the original author(s). As an addendum, it is my humble
+request that if you do fork and change SimpleCL , that you at least qualify it with a submname like "SimpleCL/YourVersion."
+
+You can find both license texts in the <./licenses/> folder.
